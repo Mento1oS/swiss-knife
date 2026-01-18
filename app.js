@@ -3,8 +3,9 @@ export default (express, bodyParser, createReadStream, crypto, http) => {
     app.use(bodyParser.urlencoded({ extended: false }))
     app.use(bodyParser.json())
     app.use((req, res, next) => {
-        res.set('Access-Control-Allow-Origin', '*')
-        res.set('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,OPTIONS,DELETE')
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', '*');
         if (!req.path.endsWith('/')) return res.redirect(301, req.path + '/')
         next()
     })
