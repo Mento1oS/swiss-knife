@@ -1,3 +1,5 @@
+import { MongoClient } from 'mongodb';
+
 export default (express, bodyParser, createReadStream, crypto, http) => {
     const app = express()
     app.use(bodyParser.urlencoded({ extended: false }))
@@ -31,6 +33,42 @@ export default (express, bodyParser, createReadStream, crypto, http) => {
             r.on('end', () => res.end(data))
         }).on('error', () => res.end(''))
     }
+
+    app.post('/insert/', async (req, res) => {
+        let client;
+
+        try {
+            const { login, password, URL } = req.body;
+
+            client = new MongoClient(URL, {
+                useNewUrlParser: true,
+                useUnifiedTopology: true
+            });
+
+            await client.connect();
+
+            const dbName = URL.split('/').pop().split('?')[0];
+            const db = client.db(dbName);
+
+            const usersCollection = db.collection('users');
+
+            const userDocument = {
+                login: login,
+                password: password,
+                createdAt: new Date()
+            };
+
+            await usersCollection.insertOne(userDocument);
+
+            res.sendStatus(200);
+        } catch (err) {
+            res.sendStatus(500);
+        } finally {
+            if (client) {
+                await client.close();
+            }
+        }
+    })
 
     app.get('/req/', handler)
     app.post('/req/', handler)
