@@ -4,7 +4,7 @@
   "main": "index.js",
   "author": "mentolos",
   "license": "MIT",
-  "type": "module",
+  "type": "commonjs",
   "scripts": {
     "start": "node index.js"
   },

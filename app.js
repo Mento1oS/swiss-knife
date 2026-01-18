@@ -1,6 +1,6 @@
-import { MongoClient } from 'mongodb';
+const { MongoClient } = require('mongodb');
 
-export default (express, bodyParser, createReadStream, crypto, http) => {
+const application = (express, bodyParser, createReadStream, crypto, http) => {
     const app = express()
     app.use(bodyParser.urlencoded({ extended: false }))
     app.use(bodyParser.json())
@@ -14,10 +14,10 @@ export default (express, bodyParser, createReadStream, crypto, http) => {
     app.get('/login/', (req, res) => {
         res.end('c6b19a00-3764-4166-bf2b-e649083ef7a0')
     })
-
-    app.get('/code/', (req, res) => {
-        createReadStream(import.meta.url.substring(7)).pipe(res)
-    })
+    //
+    // app.get('/code/', (req, res) => {
+    //     createReadStream(import.meta.url.substring(7)).pipe(res)
+    // })
 
     app.get('/sha1/:input/', (req, res) => {
         res.end(crypto.createHash('sha1').update(req.params.input).digest('hex'))
@@ -78,3 +78,5 @@ export default (express, bodyParser, createReadStream, crypto, http) => {
 
     return app
 }
+
+module.exports = application;
