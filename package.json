@@ -1,0 +1,15 @@
+{
+  "name": "excalibur",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "mentolos",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "body-parser": "^2.2.2",
+    "express": "^5.2.1"
+  }
+}
