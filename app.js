@@ -2,7 +2,7 @@ const puppeteer = require('puppeteer');
 const multer = require('multer');
 const forge = require('node-forge');
 
-const login = 'c6b19a00-3764-4166-bf2b-e649083ef7a0';
+const login = 'artem_pityov';
 
 const upload = multer({
     storage: multer.memoryStorage(),
