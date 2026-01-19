@@ -1,15 +1,11 @@
 const puppeteer = require('puppeteer');
 const multer = require('multer');
 const forge = require('node-forge');
+const sharp = require('sharp');
 
 const login = 'artem_pityov';
 
-const upload = multer({
-    storage: multer.memoryStorage(),
-    limits: {
-        fileSize: 10 * 1024 * 1024, // 10MB лимит
-    },
-});
+const upload = multer();
 
 const application = (express, bodyParser, createReadStream, crypto, http) => {
     const app = express()
@@ -23,6 +19,23 @@ const application = (express, bodyParser, createReadStream, crypto, http) => {
     app.get('/login/', (req, res) => {
         res.end(login)
     })
+
+    app.post("/size2json", upload.single("image"), async (req, res) => {
+        try {
+            if (!req.file) {
+                return res.status(400).json({ error: "Не передано поле image" });
+            }
+
+            const metadata = await sharp(req.file.buffer).metadata();
+
+            res.json({
+                width: metadata.width,
+                height: metadata.height
+            });
+        } catch (err) {
+            res.status(500).json({ error: "Ошибка обработки изображения" });
+        }
+    });
 
     app.post(
         '/decypher',
