@@ -73,6 +73,7 @@ const application = (express, bodyParser, createReadStream, crypto, http) => {
 
         await browser.close();
 
+        res.setHeader('Content-Type', 'text/plain')
         res.send(result);
     });
 
