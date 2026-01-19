@@ -18,7 +18,7 @@ const application = (express, bodyParser, createReadStream, crypto, http) => {
     })
 
     app.post('/decypher', (req, res) => {
-        const busboy = new Busboy({ headers: req.headers });
+        const busboy = Busboy({ headers: req.headers });
 
         let privateKeyPem = '';
         let encryptedBuffer = Buffer.alloc(0);
