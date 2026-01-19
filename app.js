@@ -1,6 +1,7 @@
 const { MongoClient } = require('mongodb');
 const axios = require('axios');
 const pug = require('pug');
+const puppeteer = require('puppeteer');
 
 const login = 'c6b19a00-3764-4166-bf2b-e649083ef7a0';
 
@@ -45,6 +46,34 @@ const application = (express, bodyParser, createReadStream, crypto, http) => {
                 protected: false
             }
         });
+    });
+
+    app.get('/test/', async (req, res) => {
+        const targetURL = req.query.URL;
+
+        const browser = await puppeteer.launch({
+            headless: 'new',
+            executablePath: '/usr/bin/chromium-browser',
+            args: ['--no-sandbox', '--disable-setuid-sandbox']
+        })
+
+        const page = await browser.newPage();
+        await page.goto(targetURL, { waitUntil: 'networkidle2' });
+
+        await page.click('#bt');
+
+        await page.waitForFunction(() => {
+            const input = document.querySelector('#inp');
+            return input.value;
+        }, { timeout: 1000 });
+
+        const result = await page.evaluate(() => {
+            return document.querySelector('#inp').value;
+        });
+
+        await browser.close();
+
+        res.send(result);
     });
 
     app.post('/render/', async (req, res) => {
