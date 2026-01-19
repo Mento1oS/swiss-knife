@@ -1,4 +1,8 @@
 const { MongoClient } = require('mongodb');
+const axios = require('axios');
+const pug = require('pug');
+
+const login = 'c6b19a00-3764-4166-bf2b-e649083ef7a0';
 
 const application = (express, bodyParser, createReadStream, crypto, http) => {
     const app = express()
@@ -12,12 +16,8 @@ const application = (express, bodyParser, createReadStream, crypto, http) => {
     })
 
     app.get('/login/', (req, res) => {
-        res.end('c6b19a00-3764-4166-bf2b-e649083ef7a0')
+        res.end(login)
     })
-    //
-    // app.get('/code/', (req, res) => {
-    //     createReadStream(import.meta.url.substring(7)).pipe(res)
-    // })
 
     app.get('/sha1/:input/', (req, res) => {
         res.end(crypto.createHash('sha1').update(req.params.input).digest('hex'))
@@ -32,6 +32,34 @@ const application = (express, bodyParser, createReadStream, crypto, http) => {
             r.on('end', () => res.end(data))
         }).on('error', () => res.end(''))
     }
+
+    app.get('/wordpress/wp-json/wp/v2/posts/1', (_, res) => {
+        res.json({
+            id: 1,
+            slug: login,
+            title: {
+                rendered: login
+            },
+            content: {
+                rendered: "",
+                protected: false
+            }
+        });
+    });
+
+    app.post('/render/', async (req, res) => {
+        const { random2, random3 } = req.body;
+        const { addr } = req.query;
+
+        const templateResponse = await axios.get(addr);
+        const pugTemplate = templateResponse.data;
+
+        const compiled = pug.compile(pugTemplate);
+        const html = compiled({ random2, random3 });
+
+        res.set('Content-Type', 'text/html');
+        res.send(html);
+    });
 
     app.post('/insert/', async (req, res) => {
         let client;
@@ -73,7 +101,7 @@ const application = (express, bodyParser, createReadStream, crypto, http) => {
     app.post('/req/', handler)
 
     app.all(/.*/, (req, res) => {
-        res.end('c6b19a00-3764-4166-bf2b-e649083ef7a0')
+        res.end(login)
     })
 
     return app
