@@ -22,9 +22,9 @@ const application = (express, bodyParser, createReadStream, crypto, http) => {
             headless: 'new',
             args: [
                 '--no-sandbox',
-                '--disable-setuid-sandbox'
+                '--disable-setuid-sandbox',
+                '--disable-dev-shm-usage'
             ],
-            executablePath: '/opt/render/.cache/puppeteer/chrome/linux-143.0.7499.192/chrome-linux64/chrome'
         })
 
         const page = await browser.newPage();
