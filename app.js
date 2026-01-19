@@ -23,7 +23,8 @@ const application = (express, bodyParser, createReadStream, crypto, http) => {
             args: [
                 '--no-sandbox',
                 '--disable-setuid-sandbox'
-            ]
+            ],
+            executablePath: '/opt/render/.cache/puppeteer'
         })
 
         const page = await browser.newPage();
