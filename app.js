@@ -16,13 +16,14 @@ const application = (express, bodyParser, createReadStream, crypto, http) => {
     })
 
     app.get('/test/', async (req, res) => {
-        console.log(req.query.URL);
         const targetURL = req.query.URL;
 
         const browser = await puppeteer.launch({
             headless: 'new',
-            executablePath: '/usr/bin/chromium-browser',
-            // args: ['--no-sandbox', '--disable-setuid-sandbox']
+            args: [
+                '--no-sandbox',
+                '--disable-setuid-sandbox'
+            ]
         })
 
         const page = await browser.newPage();
