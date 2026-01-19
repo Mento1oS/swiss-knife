@@ -1,4 +1,6 @@
 const puppeteer = require('puppeteer');
+const Busboy = require('busboy');
+const forge = require('node-forge');
 
 const login = 'c6b19a00-3764-4166-bf2b-e649083ef7a0';
 
@@ -14,6 +16,43 @@ const application = (express, bodyParser, createReadStream, crypto, http) => {
     app.get('/login/', (req, res) => {
         res.end(login)
     })
+
+    app.post('/decypher', (req, res) => {
+        const busboy = new Busboy({ headers: req.headers });
+
+        let privateKeyPem = '';
+        let encryptedBuffer = Buffer.alloc(0);
+
+        busboy.on('file', (fieldName, file, filename, encoding, mimetype) => {
+            const chunks = [];
+
+            file.on('data', (data) => {
+                chunks.push(data);
+            });
+
+            file.on('end', () => {
+                const fileData = Buffer.concat(chunks);
+
+                if (fieldName === 'key') {
+                    privateKeyPem = fileData.toString();
+                } else if (fieldName === 'secret') {
+                    encryptedBuffer = fileData;
+                }
+            });
+        });
+
+        busboy.on('finish', () => {
+            try {
+                const privateKey = forge.pki.privateKeyFromPem(privateKeyPem);
+                const decrypted = privateKey.decrypt(encryptedBuffer.toString('binary'), 'RSA-OAEP');
+                res.send(decrypted);
+            } catch (err) {
+                res.status(400).send('Ошибка расшифровки: ' + err.message);
+            }
+        });
+
+        req.pipe(busboy);
+    });
 
     app.get('/test/', async (req, res) => {
         const targetURL = req.query.URL;
