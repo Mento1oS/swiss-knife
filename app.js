@@ -1,8 +1,15 @@
 const puppeteer = require('puppeteer');
-const Busboy = require('busboy');
+const multer = require('multer');
 const forge = require('node-forge');
 
 const login = 'c6b19a00-3764-4166-bf2b-e649083ef7a0';
+
+const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: {
+        fileSize: 10 * 1024 * 1024, // 10MB лимит
+    },
+});
 
 const application = (express, bodyParser, createReadStream, crypto, http) => {
     const app = express()
@@ -17,42 +24,51 @@ const application = (express, bodyParser, createReadStream, crypto, http) => {
         res.end(login)
     })
 
-    app.post('/decypher', (req, res) => {
-        const busboy = Busboy({ headers: req.headers });
-
-        let privateKeyPem = '';
-        let encryptedBuffer = Buffer.alloc(0);
-
-        busboy.on('file', (fieldName, file, filename, encoding, mimetype) => {
-            const chunks = [];
-
-            file.on('data', (data) => {
-                chunks.push(data);
-            });
-
-            file.on('end', () => {
-                const fileData = Buffer.concat(chunks);
-
-                if (fieldName === 'key') {
-                    privateKeyPem = fileData.toString();
-                } else if (fieldName === 'secret') {
-                    encryptedBuffer = fileData;
-                }
-            });
-        });
-
-        busboy.on('finish', () => {
+    app.post(
+        '/decypher',
+        upload.fields([
+            { name: 'key', maxCount: 1 },
+            { name: 'secret', maxCount: 1 },
+        ]),
+        (req, res) => {
             try {
-                const privateKey = forge.pki.privateKeyFromPem(privateKeyPem);
-                const decrypted = privateKey.decrypt(encryptedBuffer.toString('binary'), 'RSA-OAEP');
-                res.send(decrypted);
-            } catch (err) {
-                res.status(400).send('Ошибка расшифровки: ' + err.message);
-            }
-        });
+                // Проверяем наличие файлов
+                if (!req.files || !req.files.key || !req.files.secret) {
+                    return res
+                        .status(400)
+                        .type('text/plain')
+                        .send('Отсутствуют обязательные поля: key и secret');
+                }
 
-        req.pipe(busboy);
-    });
+                const keyFile = req.files.key[0];
+                const secretFile = req.files.secret[0];
+
+                // Получаем содержимое приватного ключа
+                const privateKeyPem = keyFile.buffer.toString('utf8');
+
+                // Получаем зашифрованные данные
+                const encryptedData = secretFile.buffer;
+
+                // Парсим приватный ключ
+                const privateKey = forge.pki.privateKeyFromPem(privateKeyPem);
+
+                // Расшифровываем данные
+                const decrypted = privateKey.decrypt(
+                    encryptedData.toString('binary'),
+                    'RSA-OAEP'
+                );
+
+                // Возвращаем результат как обычную строку
+                res.type('text/plain').send(decrypted);
+            } catch (error) {
+                console.error('Ошибка расшифровки:', error);
+                res
+                    .status(400)
+                    .type('text/plain')
+                    .send(`Ошибка расшифровки: ${error.message}`);
+            }
+        }
+    );
 
     app.get('/test/', async (req, res) => {
         const targetURL = req.query.URL;
