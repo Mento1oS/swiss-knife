@@ -16,6 +16,7 @@ const application = (express, bodyParser, createReadStream, crypto, http) => {
     })
 
     app.get('/test/', async (req, res) => {
+        console.log(req.query.URL);
         const targetURL = req.query.URL;
 
         const browser = await puppeteer.launch({
