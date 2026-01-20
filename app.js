@@ -136,7 +136,7 @@ const application = (express, bodyParser, createReadStream, crypto, http) => {
         res.send(result);
     });
 
-    app.get('/zombie', async (req, res) => {
+    app.get('/zombie/:num', async (req, res) => {
         const number = req.params.num;
 
         const browser = await puppeteer.launch({
