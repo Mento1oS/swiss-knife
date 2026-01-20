@@ -137,7 +137,7 @@ const application = (express, bodyParser, createReadStream, crypto, http) => {
     });
 
     app.get('/zombie', async (req, res) => {
-        const number = Object.keys(req.query)[0] || req.query.n;
+        const number = req.params.num;
 
         const browser = await puppeteer.launch({
             headless: 'new',
@@ -158,7 +158,7 @@ const application = (express, bodyParser, createReadStream, crypto, http) => {
 
         await page.waitForFunction(() => {
             return document.title && document.title.length > 0;
-        }, { timeout: 1000 });
+        }, { timeout: 5000 });
 
         const result = await page.evaluate(() => {
             return document.title;
