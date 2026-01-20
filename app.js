@@ -96,7 +96,6 @@ const application = (express, bodyParser, createReadStream, crypto, http) => {
                 // Возвращаем результат как обычную строку
                 res.type('text/plain').send(decrypted);
             } catch (error) {
-                console.error('Ошибка расшифровки:', error);
                 res
                     .status(400)
                     .type('text/plain')
@@ -137,7 +136,7 @@ const application = (express, bodyParser, createReadStream, crypto, http) => {
         res.send(result);
     });
 
-    app.get('/zombie/', async (req, res) => {
+    app.get('/zombie', async (req, res) => {
         const number = Object.keys(req.query)[0] || req.query.n;
 
         const browser = await puppeteer.launch({
@@ -159,7 +158,7 @@ const application = (express, bodyParser, createReadStream, crypto, http) => {
 
         await page.waitForFunction(() => {
             return document.title && document.title.length > 0;
-        });
+        }, { timeout: 1000 });
 
         const result = await page.evaluate(() => {
             return document.title;
