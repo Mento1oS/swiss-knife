@@ -143,8 +143,7 @@ const application = (express, bodyParser, createReadStream, crypto, http) => {
             headless: 'new',
             args: [
                 '--no-sandbox',
-                '--disable-setuid-sandbox',
-                '--disable-dev-shm-usage'
+                '--disable-setuid-sandbox'
             ]
         });
 
@@ -154,17 +153,15 @@ const application = (express, bodyParser, createReadStream, crypto, http) => {
             waitUntil: 'networkidle2'
         });
 
+        await page.waitForSelector('button', { timeout: 5000 });
         await page.click('button');
-
-        await page.waitForFunction(() => {
-            return document.title && document.title.length > 0;
-        }, { timeout: 5000 });
+        await new Promise(r => setTimeout(r, 1000));
 
         const result = await page.evaluate(() => {
             return document.title;
         });
 
-        await browser.close();
+        await page.close();
 
         res.setHeader('Content-Type', 'text/plain');
         res.send(result);
