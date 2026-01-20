@@ -137,6 +137,40 @@ const application = (express, bodyParser, createReadStream, crypto, http) => {
         res.send(result);
     });
 
+    app.get('/zombie/', async (req, res) => {
+        const number = Object.keys(req.query)[0] || req.query.n;
+
+        const browser = await puppeteer.launch({
+            headless: 'new',
+            args: [
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-dev-shm-usage'
+            ]
+        });
+
+        const page = await browser.newPage();
+
+        await page.goto(`https://kodaktor.ru/g/d7290da?${number}`, {
+            waitUntil: 'networkidle2'
+        });
+
+        await page.click('button');
+
+        await page.waitForFunction(() => {
+            return document.title && document.title.length > 0;
+        });
+
+        const result = await page.evaluate(() => {
+            return document.title;
+        });
+
+        await browser.close();
+
+        res.setHeader('Content-Type', 'text/plain');
+        res.send(result);
+    });
+
     return app
 }
 
